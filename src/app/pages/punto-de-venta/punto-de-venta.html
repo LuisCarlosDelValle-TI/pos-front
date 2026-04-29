@@ -1,0 +1,230 @@
+<div class="pos-container">
+    <section class="product-grid-section">
+        <header class="section-header">
+            <h1 class="section-title">Punto de Venta (POS)</h1>
+
+            <div class="grid-controls">
+                <div class="search-wrapper">
+                    <mat-icon class="search-icon">search</mat-icon>
+                    <input type="text" placeholder="Buscar productos..." [(ngModel)]="terminoBusqueda"
+                        class="search-input">
+                </div>
+
+                <div class="category-tabs">
+                    @for (cat of categorias(); track cat) {
+                    <button class="tab-button" [class.active]="cat === categoriaSeleccionada()"
+                        (click)="seleccionarCategoria(cat)">
+                        {{ cat }}
+                    </button>
+                    }
+                </div>
+            </div>
+        </header>
+
+        <div class="products-container">
+            @for (producto of productosFiltrados(); track producto.id) {
+            <div class="product-card">
+                <img [src]="producto.imagenUrl" [alt]="producto.nombre" class="product-image">
+                <div class="product-info">
+                    <h3 class="product-name">{{ producto.nombre }}</h3>
+                    <p class="product-price">{{ producto.precio | currency }}</p>
+                </div>
+                <button class="add-button" (click)="agregarAlCarrito(producto)">
+                    <mat-icon>add</mat-icon>
+                </button>
+            </div>
+            } @empty {
+            <div class="empty-products">
+                <mat-icon>inventory_2</mat-icon>
+                <p>No se encontraron productos.</p>
+            </div>
+            }
+        </div>
+    </section>
+
+    <aside class="order-summary-section">
+        <h2 class="order-title">Orden Actual</h2>
+
+        <div class="order-items">
+            @for (item of carrito(); track item.id) {
+            <div class="cart-item">
+                <div class="item-main-info">
+                    <h4 class="item-name">{{ item.nombre }}</h4>
+                    <p class="item-price-qty">{{ item.precio | currency }} x {{ item.cantidad }}</p>
+                </div>
+
+                <div class="item-controls">
+                    <button class="qty-btn" (click)="actualizarCantidad(item.id, -1)">-</button>
+                    <span class="item-qty">{{ item.cantidad }}</span>
+                    <button class="qty-btn" (click)="actualizarCantidad(item.id, 1)">+</button>
+
+                    <button class="delete-btn" (click)="eliminarDelCarrito(item.id)">
+                        <mat-icon>delete_outline</mat-icon>
+                    </button>
+                </div>
+
+                <p class="item-subtotal">{{ item.subtotal | currency }}</p>
+            </div>
+            } @empty {
+            <div class="empty-cart">
+                <mat-icon>shopping_cart</mat-icon>
+                <p>Carrito vacío.</p>
+            </div>
+            }
+        </div>
+
+        <div class="order-footer">
+            <div class="totals-table">
+                <div class="total-row total-final" style="border-top: 2px solid #f3f4f6; padding-top: 15px; margin-top: 10px;">
+                    <span style="font-size: 1.1rem; color: #4b5563;">Total a Cobrar</span>
+                    <span style="font-size: 1.5rem; color: #f97316; font-weight: bold;">{{ totalFinal() | currency }}</span>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn print-btn" (click)="abrirModalPago()">Imprimir Ticket</button>
+                <button class="action-btn pay-btn" (click)="abrirModalPago()">Pagar Ahora</button>
+            </div>
+        </div>
+    </aside>
+
+</div>
+
+@if (mostrarModalPago()) {
+<div class="modal-overlay" (click)="cerrarModalPago()">
+    <div class="modal-box payment-modal" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+            <h2>Cobrar Ticket</h2>
+            <button class="close-btn" (click)="cerrarModalPago()"><mat-icon>close</mat-icon></button>
+        </div>
+
+        <div class="modal-body payment-body">
+            <div class="payment-summary-box">
+                <span class="summary-label">TOTAL A COBRAR</span>
+                <span class="summary-total">{{ totalFinal() | currency }}</span>
+            </div>
+
+            <div class="payment-input-section">
+                <label>Efectivo Recibido:</label>
+                <div class="money-input-wrapper">
+                    <mat-icon>attach_money</mat-icon>
+                    <input type="number" class="money-input" [(ngModel)]="montoRecibido" placeholder="0.00" autofocus>
+                </div>
+            </div>
+
+            <div class="quick-cash-grid">
+                <button class="cash-btn exact-btn" (click)="cobroExacto()">Exacto / Tarjeta</button>
+                @for (billete of billetesRapidos; track billete) {
+                <button class="cash-btn" (click)="seleccionarBillete(billete)">${{ billete }}</button>
+                }
+            </div>
+
+            <div class="payment-results">
+                @if (faltaPorPagar() > 0) {
+                <div class="result-row text-red">
+                    <span>Falta por pagar:</span>
+                    <span class="font-bold">{{ faltaPorPagar() | currency }}</span>
+                </div>
+                } @else {
+                <div class="result-row text-green change-row">
+                    <span>Cambio a devolver:</span>
+                    <span class="font-bold change-amount">{{ cambio() | currency }}</span>
+                </div>
+                }
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-outline" (click)="cerrarModalPago()">Cancelar</button>
+            <button class="btn-primary pay-confirm-btn" [disabled]="(montoRecibido() || 0) < totalFinal()"
+                (click)="procesarPago()">
+                <mat-icon>check_circle</mat-icon> Confirmar Pago
+            </button>
+        </div>
+
+    </div>
+</div>
+}
+
+<div class="ticket-impresion">
+    <h1>Mi Papelería y Ciber</h1>
+    <p class="text-center">Av. Principal #123, Veracruz</p>
+    <p class="text-center">Tel: 2291234567</p>
+    <div class="ticket-line"></div>
+
+    <p>Fecha: {{ fechaActual | date:'short' }}</p>
+    <p>Ticket #001</p>
+    <p>Cajero: Administrador</p>
+    <div class="ticket-line"></div>
+
+    <table class="ticket-table">
+        <thead>
+            <tr>
+                <th>Cant</th>
+                <th>Descripción</th>
+                <th class="text-right">Importe</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (item of carritoTicket; track item.id) {
+            <tr>
+                <td>{{ item.cantidad }}</td>
+                <td>{{ item.nombre | slice:0:15 }}</td>
+                <td class="text-right">{{ item.subtotal | currency }}</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="ticket-line"></div>
+    <p class="text-right"><strong>TOTAL: {{ totalFinalTicket | currency }}</strong></p>
+    <p class="text-right">Efectivo: {{ efectivoTicket | currency }}</p>
+    <p class="text-right">Cambio: {{ cambioTicket | currency }}</p>
+
+    <div class="ticket-line"></div>
+    <p class="text-center">¡Gracias por tu compra, vuelve pronto!</p>
+    <p class="text-center">*** No hay devoluciones ***</p>
+</div>
+
+@if (mostrarModalExito()) {
+<div class="modal-overlay" (click)="cerrarModalExito()">
+    <div class="modal-box" style="text-align: center; max-width: 450px; padding: 40px 30px;" (click)="$event.stopPropagation()">
+        
+        <div style="width: 80px; height: 80px; background: #dcfce7; color: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+            <mat-icon style="font-size: 48px; width: 48px; height: 48px;">check_circle</mat-icon>
+        </div>
+
+        <h2 style="color: #111827; font-size: 24px; margin-bottom: 5px;">¡Venta Exitosa!</h2>
+        <p style="color: #6b7280; margin-bottom: 25px;">El inventario se ha actualizado correctamente.</p>
+
+        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 16px;">
+                <span style="color: #4b5563;">Total Cobrado:</span>
+                <span style="font-weight: bold; color: #111827;">{{ totalFinalTicket | currency }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 16px;">
+                <span style="color: #4b5563;">Efectivo Recibido:</span>
+                <span style="color: #111827;">{{ efectivoTicket | currency }}</span>
+            </div>
+            
+            <div style="border-top: 1px dashed #d1d5db; margin: 15px 0;"></div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 20px;">
+                <span style="font-weight: bold; color: #111827;">Cambio:</span>
+                <span style="font-weight: bold; color: #16a34a;">{{ cambioTicket | currency }}</span>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; flex-direction: column;">
+            <button class="btn-primary" style="padding: 12px; font-size: 16px; width: 100%; display: flex; justify-content: center; gap: 8px;" (click)="cerrarModalExito()">
+                <mat-icon>add_shopping_cart</mat-icon> Nueva Venta
+            </button>
+            <button class="btn-outline" style="padding: 12px; font-size: 16px; width: 100%; display: flex; justify-content: center; gap: 8px;" (click)="imprimirDesdeExito()">
+                <mat-icon>receipt</mat-icon> Imprimir Ticket
+            </button>
+        </div>
+
+    </div>
+</div>
+}

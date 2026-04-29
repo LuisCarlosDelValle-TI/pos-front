@@ -1,1 +1,99 @@
-/* You can add global styles to this file, and also import other style files */
+/* === MODO CLARO (Por defecto) === */
+:root {
+    --color-primary: #FF7A00;
+    --color-primary-dark: #E66E00;
+    --color-primary-light: #FFF4EB;
+    --color-bg-main: #F8F9FA;
+    --color-bg-light: #F8F9FA;
+    --color-sidebar-bg: #FFFFFF;
+    --color-text-main: #212529;
+    --color-text-dark: #212529;
+    --color-text-muted: #6C757D;
+    --color-white: #FFFFFF;
+    --color-border: #E9ECEF;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --font-family: 'Poppins', sans-serif;
+}
+
+/* === MODO OSCURO === */
+body.dark-theme {
+    --color-bg-main: #0F172A;
+    /* Azul noche profundo */
+    --color-bg-light: #0F172A;
+    --color-sidebar-bg: #1E293B;
+    /* Tarjetas y menús un poco más claros */
+    --color-white: #1E293B;
+    --color-text-main: #F8FAFC;
+    /* Texto casi blanco */
+    --color-text-dark: #F8FAFC;
+    --color-text-muted: #94A3B8;
+    /* Texto secundario grisáceo */
+    --color-border: #334155;
+    /* Bordes oscuros */
+    --color-primary-light: #43240D;
+    /* Fondo naranja oscuro para botones activos */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Transición suave y estilos base */
+body {
+    margin: 0;
+    background-color: var(--color-bg-main);
+    color: var(--color-text-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* =========================================
+   REGLAS GLOBALES DE IMPRESIÓN (TICKETS)
+   ========================================= */
+@media print {
+
+    /* 1. MAGIA NEGRA: Hacemos invisible absolutamente TODO en la página */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* 2. Excepto el ticket y todo lo que esté adentro de él, eso sí lo mostramos */
+    .ticket-impresion,
+    .ticket-impresion * {
+        visibility: visible !important;
+    }
+
+    /* 3. Forzamos el ticket a la esquina superior izquierda */
+    .ticket-impresion {
+        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        margin: 0 !important;
+        width: 58mm !important;
+        /* El ancho exacto de tu miniprinter */
+    }
+
+    /* 4. Limpiamos cualquier fondo de color o márgenes de Angular */
+    body,
+    html,
+    mat-sidenav-content {
+        background-color: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 5. Quitamos los márgenes automáticos de la hoja de Chrome */
+    @page {
+        margin: 0;
+    }
+
+    /* 6. Eliminamos los bordes fantasmas del texto */
+    .ticket-impresion,
+    .ticket-impresion h1,
+    .ticket-impresion p {
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+    }
+}

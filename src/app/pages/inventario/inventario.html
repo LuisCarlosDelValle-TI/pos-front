@@ -1,0 +1,214 @@
+<div class="page-container">
+
+    <header class="page-header">
+        <div class="header-title-area">
+            <h1 class="section-title">Control de Inventario</h1>
+            <p class="section-subtitle">Gestiona tus productos de papelería y ciber</p>
+        </div>
+        <button class="btn-primary" (click)="abrirModalNuevo()">
+            <mat-icon>add</mat-icon> Nuevo Producto
+        </button>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-green-light text-green"><mat-icon>inventory_2</mat-icon></div>
+            <div class="stat-info">
+                <span class="stat-label">Total de Artículos</span>
+                <span class="stat-value">{{ totalProductos() }}</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-orange-light text-orange"><mat-icon>warning</mat-icon></div>
+            <div class="stat-info">
+                <span class="stat-label">Stock Bajo / Agotado</span>
+                <span class="stat-value text-orange">{{ productosBajos() }}</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-blue-light text-blue"><mat-icon>account_balance_wallet</mat-icon></div>
+            <div class="stat-info">
+                <span class="stat-label">Valor del Inventario (Costo)</span>
+                <span class="stat-value">{{ valorInventario() | currency }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container card-box">
+        <div class="table-toolbar">
+            <div class="search-wrapper">
+                <mat-icon class="search-icon">search</mat-icon>
+                <input type="text" placeholder="Buscar por nombre, código o categoría..." [(ngModel)]="terminoBusqueda"
+                    class="search-input">
+            </div>
+            <div class="toolbar-actions">
+                <button class="btn-outline">Filtros</button>
+                <button class="btn-outline"><mat-icon>download</mat-icon> Exportar</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>CÓDIGO</th>
+                        <th>PRODUCTO</th>
+                        <th>CATEGORÍA</th>
+                        <th>COSTO</th>
+                        <th>PRECIO VENTA</th>
+                        <th>STOCK</th>
+                        <th>ESTADO</th>
+                        <th class="text-right">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (prod of productosFiltrados(); track prod.id) {
+                    <tr>
+                        <td class="text-muted">{{ prod.codigoBarras }}</td>
+                        <td class="font-bold">{{ prod.nombre }}</td>
+                        <td><span class="category-badge">{{ prod.categoria }}</span></td>
+                        <td>{{ prod.precioCompra | currency }}</td>
+                        <td class="font-bold">{{ prod.precioVenta | currency }}</td>
+                        <td class="font-bold">{{ prod.stock }}</td>
+                        <td>
+                            @if (prod.stock === 0) {
+                            <span class="status-badge agotado">Agotado</span>
+                            } @else if (prod.stock <= prod.stockMinimo) { <span class="status-badge bajo">Bajo</span>
+                                } @else {
+                                <span class="status-badge optimo">Óptimo</span>
+                                }
+                        </td>
+                        <td class="text-right actions-cell">
+                            <button class="icon-btn edit-btn"
+                                (click)="editarProducto(prod)"><mat-icon>edit</mat-icon></button>
+                            <button class="icon-btn delete-btn"
+                                (click)="eliminarProducto(prod)"><mat-icon>delete</mat-icon></button>
+                        </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                        <td colspan="8" class="empty-state">No se encontraron productos.</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if (mostrarModal()) {
+<div class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+            <h2>{{ modoEdicion() ? 'Editar Producto' : 'Registrar Nuevo Producto' }}</h2>
+            <button class="close-btn" (click)="cerrarModal()"><mat-icon>close</mat-icon></button>
+        </div>
+
+        <div class="modal-body form-grid">
+            <div class="form-group full-width">
+                <label>Nombre / Descripción *</label>
+                <input type="text" [(ngModel)]="productoNuevo().nombre" class="custom-input"
+                    placeholder="Ej. Pegamento Lápiz Pritt 10g">
+            </div>
+
+            <div class="form-group">
+                <label>Código de Barras *</label>
+                <input type="text" [(ngModel)]="productoNuevo().codigoBarras" class="custom-input"
+                    placeholder="Escanea o escribe">
+            </div>
+
+            <div class="form-group">
+                <label>Categoría</label>
+                <select [(ngModel)]="productoNuevo().categoria" class="custom-input">
+                    <option value="Papelería">Papelería</option>
+                    <option value="Ciber">Ciber / Servicios</option>
+                    <option value="Dulcería">Dulcería</option>
+                    <option value="Regalos">Regalos</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Costo de Compra ($)</label>
+                <input type="number" [(ngModel)]="productoNuevo().precioCompra" class="custom-input" placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+                <label>Precio de Venta ($) *</label>
+                <input type="number" [(ngModel)]="productoNuevo().precioVenta" class="custom-input" placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+                <label>Stock Inicial</label>
+                <input type="number" [(ngModel)]="productoNuevo().stock" class="custom-input" placeholder="0">
+            </div>
+
+            <div class="form-group">
+                <label>Aviso de Stock Bajo (Mínimo)</label>
+                <input type="number" [(ngModel)]="productoNuevo().stockMinimo" class="custom-input" placeholder="5">
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1; margin-top: 10px;">
+                <label style="display: block; margin-bottom: 8px; color: #4b5563; font-weight: bold;">Foto del Producto (Opcional)</label>
+                
+                <input type="file" id="fotoInput" accept="image/*" (change)="procesarImagen($event)" style="display: none;">
+                
+                <div style="display: flex; gap: 15px; align-items: center; background: #f9fafb; padding: 10px; border-radius: 8px; border: 1px dashed #d1d5db;">
+                    @if (productoNuevo().imagenUrl) {
+                        <img [src]="productoNuevo().imagenUrl" style="width: 65px; height: 65px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    } @else {
+                        <div style="width: 65px; height: 65px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
+                            <mat-icon>image_not_supported</mat-icon>
+                        </div>
+                    }
+
+                    <button type="button" style="display: flex; align-items: center; gap: 5px; padding: 8px 16px; background: white; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; color: #374151; font-weight: 500;" onclick="document.getElementById('fotoInput').click()">
+                        <mat-icon style="color: #3b82f6;">add_a_photo</mat-icon> 
+                        {{ productoNuevo().imagenUrl ? 'Cambiar Imagen' : 'Subir Imagen' }}
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-outline" (click)="cerrarModal()">Cancelar</button>
+            <button class="btn-primary" (click)="guardarProductoNuevo()">
+                <mat-icon>save</mat-icon> {{ modoEdicion() ? 'Actualizar Producto' : 'Guardar Producto' }}
+            </button>
+        </div>
+
+    </div>
+</div>
+}
+
+@if (mostrarModalEliminar()) {
+<div class="modal-overlay" (click)="cerrarModalEliminar()">
+    <div class="modal-box mini-modal" (click)="$event.stopPropagation()">
+
+        <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+            <h2 style="color: #dc2626; display: flex; align-items: center; gap: 8px; margin: 0;">
+                <mat-icon>warning</mat-icon> Confirmar Eliminación
+            </h2>
+            <button class="close-btn" (click)="cerrarModalEliminar()"><mat-icon>close</mat-icon></button>
+        </div>
+
+        <div class="modal-body" style="padding-top: 15px;">
+            <p style="margin: 0 0 10px; font-size: 16px;">
+                ¿Estás seguro de que deseas eliminar permanentemente <strong>{{ productoAEliminar()?.nombre }}</strong>?
+            </p>
+            <p style="margin: 0; font-size: 13px; color: #6b7280;">
+                Esta acción no se puede deshacer y el producto desaparecerá de tu base de datos.
+            </p>
+        </div>
+
+        <div class="modal-footer" style="margin-top: 10px;">
+            <button class="btn-outline" (click)="cerrarModalEliminar()">Cancelar</button>
+            <button class="btn-primary" style="background-color: #dc2626; border-color: #dc2626;" (click)="ejecutarEliminacion()">
+                <mat-icon>delete_forever</mat-icon> Sí, Eliminar
+            </button>
+        </div>
+
+    </div>
+</div>
+}

@@ -1,0 +1,79 @@
+<div class="page-container">
+    <header class="page-header">
+        <div class="header-title-area">
+            <h1 class="section-title">Directorio de Clientes</h1>
+            <p class="section-subtitle">Administra tus clientes y saldos pendientes</p>
+        </div>
+        <button class="btn-primary">
+            <mat-icon>person_add</mat-icon> Nuevo Cliente
+        </button>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-blue-light text-blue"><mat-icon>people</mat-icon></div>
+            <div class="stat-info">
+                <span class="stat-label">Total Clientes</span>
+                <span class="stat-value">{{ totalClientes() }}</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-red-light text-red"><mat-icon>account_balance_wallet</mat-icon></div>
+            <div class="stat-info">
+                <span class="stat-label">Saldos por Cobrar</span>
+                <span class="stat-value text-red">{{ deudaTotal() | currency }}</span>
+            </div>
+        </div>
+    </div>
+
+    <section class="table-section">
+        <div class="table-toolbar">
+            <div class="search-wrapper">
+                <mat-icon class="search-icon">search</mat-icon>
+                <input type="text" placeholder="Buscar cliente..." [(ngModel)]="terminoBusqueda" class="search-input">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Contacto</th>
+                        <th>Compras</th>
+                        <th>Saldo</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (cliente of clientesFiltrados(); track cliente.id) {
+                    <tr>
+                        <td>
+                            <div class="client-profile">
+                                <div class="avatar-circle">{{ obtenerIniciales(cliente.nombre) }}</div>
+                                <div class="client-info">
+                                    <span class="font-bold">{{ cliente.nombre }}</span>
+                                    <span class="font-mono">{{ cliente.id }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ cliente.telefono }}</td>
+                        <td>{{ cliente.comprasTotales | currency }}</td>
+                        <td>
+                            <span [class.debt-amount]="cliente.saldoPendiente > 0">
+                                {{ cliente.saldoPendiente > 0 ? (cliente.saldoPendiente | currency) : 'Al corriente' }}
+                            </span>
+                        </td>
+                        <td><span class="status-badge success">{{ cliente.estado }}</span></td>
+                        <td>
+                            <button class="icon-btn edit"><mat-icon>edit</mat-icon></button>
+                            <button class="icon-btn delete"><mat-icon>delete_outline</mat-icon></button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>

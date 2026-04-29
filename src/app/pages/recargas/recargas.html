@@ -1,0 +1,127 @@
+<div class="pos-container">
+
+    <section class="workflow-section">
+        <header class="section-header">
+            <h1 class="section-title">Centro de Pagos y Recargas</h1>
+
+            <div class="type-selector">
+                <button class="type-btn" [class.active]="tipoActivo() === 'recarga'" (click)="cambiarTipo('recarga')">
+                    <mat-icon>phonelink_ring</mat-icon>
+                    Tiempo Aire
+                </button>
+                <button class="type-btn" [class.active]="tipoActivo() === 'servicio'" (click)="cambiarTipo('servicio')">
+                    <mat-icon>receipt_long</mat-icon>
+                    Pago de Servicios
+                </button>
+            </div>
+        </header>
+
+        <div class="workflow-content">
+
+            <div class="step-container">
+                <h3 class="step-title">1. Selecciona el proveedor</h3>
+                <div class="providers-grid">
+                    @for (prov of proveedoresFiltrados(); track prov.id) {
+                    <button class="provider-card" [class.selected]="proveedorSeleccionado()?.id === prov.id"
+                        (click)="seleccionarProveedor(prov)">
+                        <div class="provider-icon-wrapper" [style.color]="prov.color">
+                            <mat-icon>{{ prov.icono }}</mat-icon>
+                        </div>
+                        <span class="provider-name">{{ prov.nombre }}</span>
+                    </button>
+                    }
+                </div>
+            </div>
+
+            @if (proveedorSeleccionado()) {
+            <div class="step-container form-step">
+                <h3 class="step-title">2. Ingresa los datos</h3>
+
+                <div class="form-group">
+                    <label>
+                        {{ tipoActivo() === 'recarga' ? 'Número de Teléfono a 10 dígitos' : 'Número de Cuenta o
+                        Referencia' }}
+                    </label>
+                    <div class="input-wrapper">
+                        <mat-icon>dialpad</mat-icon>
+                        <input type="text" [(ngModel)]="referencia" placeholder="Ej. 2291234567"
+                            [maxLength]="tipoActivo() === 'recarga' ? 10 : 30" class="data-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Monto a pagar</label>
+                    <div class="input-wrapper">
+                        <mat-icon>attach_money</mat-icon>
+                        <input type="number" [(ngModel)]="monto" placeholder="0.00" class="data-input amount-input">
+                    </div>
+
+                    @if (tipoActivo() === 'recarga') {
+                    <div class="quick-amounts">
+                        @for (m of montosRecarga; track m) {
+                        <button class="quick-amt-btn" (click)="seleccionarMontoRapido(m)">${{ m }}</button>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+    </section>
+
+    <aside class="summary-section">
+        <div class="ticket-card">
+            <div class="ticket-header">
+                <mat-icon class="ticket-icon">verified_user</mat-icon>
+                <h2>Resumen de Operación</h2>
+            </div>
+
+            <div class="ticket-body">
+                @if (proveedorSeleccionado()) {
+                <div class="ticket-row">
+                    <span class="label">Proveedor:</span>
+                    <span class="value provider-badge" [style.background-color]="proveedorSeleccionado()?.color + '1A'"
+                        [style.color]="proveedorSeleccionado()?.color">
+                        {{ proveedorSeleccionado()?.nombre }}
+                    </span>
+                </div>
+                <div class="ticket-row">
+                    <span class="label">Referencia:</span>
+                    <span class="value emphasize">{{ referencia() || '---' }}</span>
+                </div>
+                <div class="ticket-row">
+                    <span class="label">Monto a abonar:</span>
+                    <span class="value">{{ (monto() | currency) || '$0.00' }}</span>
+                </div>
+                @if (tipoActivo() === 'servicio') {
+                <div class="ticket-row commission-row">
+                    <span class="label">Comisión de cobro:</span>
+                    <span class="value text-warning">+ {{ proveedorSeleccionado()?.comision | currency }}</span>
+                </div>
+                }
+                } @else {
+                <div class="empty-ticket">
+                    <p>Selecciona un proveedor para comenzar</p>
+                </div>
+                }
+            </div>
+
+            <div class="ticket-footer">
+                <div class="total-row">
+                    <span>TOTAL A COBRAR</span>
+                    <span class="total-amount">{{ totalACobrar() | currency }}</span>
+                </div>
+
+                <button class="process-btn" [disabled]="!formularioValido()" (click)="procesarTransaccion()">
+                    <mat-icon>check_circle</mat-icon>
+                    CONFIRMAR Y COBRAR
+                </button>
+
+                @if (!formularioValido() && proveedorSeleccionado()) {
+                <p class="validation-warning">⚠️ Revisa que el número y el monto sean correctos.</p>
+                }
+            </div>
+        </div>
+    </aside>
+
+</div>

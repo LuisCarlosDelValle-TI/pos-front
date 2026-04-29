@@ -1,0 +1,278 @@
+.app-container {
+    height: 100vh;
+    background-color: var(--color-bg-main);
+    font-family: var(--font-family);
+}
+
+/* === DISEÑO DE LA BARRA LATERAL === */
+.custom-sidebar {
+    width: 260px;
+    background-color: var(--color-sidebar-bg);
+    border-right: 1px solid #E9ECEF;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+/* Logo de la Empresa */
+.brand-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px;
+}
+
+.brand-logo {
+    background-color: var(--color-primary);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-logo mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.brand-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-text-main);
+}
+
+/* Perfil de Usuario */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 24px 24px 24px;
+    border-bottom: 1px solid #F1F3F5;
+    margin-bottom: 16px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-main);
+}
+
+.user-role {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+/* Títulos de Sección (Ej. "Operaciones") */
+.nav-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    color: #ADB5BD;
+    margin: 16px 24px 8px 24px;
+}
+
+/* Botones del Menú */
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    margin: 4px 16px;
+    border-radius: 10px;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-item mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    color: #ADB5BD;
+    transition: color 0.2s ease;
+}
+
+/* Hover: Cuando pasas el mouse */
+.nav-item:hover:not(.active) {
+    background-color: #F8F9FA;
+    color: var(--color-text-main);
+}
+
+.nav-item:hover:not(.active) mat-icon {
+    color: var(--color-text-muted);
+}
+
+/* ACTIVE: El resaltado Naranja estilo RestroBit */
+.nav-item.active {
+    background-color: var(--color-primary-light);
+    /* Naranja bajito */
+    color: var(--color-primary);
+    /* Texto naranja fuerte */
+    font-weight: 600;
+}
+
+.nav-item.active mat-icon {
+    color: var(--color-primary);
+}
+
+/* Botón de Cerrar Sesión al fondo */
+.sidebar-footer {
+    margin-top: auto;
+    padding-bottom: 24px;
+    border-top: 1px solid #F1F3F5;
+    padding-top: 16px;
+}
+
+.logout:hover {
+    color: #DC3545 !important;
+    background-color: #FFF5F5 !important;
+}
+
+.logout:hover mat-icon {
+    color: #DC3545 !important;
+}
+
+/* === ÁREA CENTRAL Y BARRA SUPERIOR === */
+.main-content {
+    background-color: var(--color-bg-main);
+    display: flex;
+    flex-direction: column;
+}
+
+.top-bar {
+    display: flex;
+    align-items: center;
+    padding: 16px 32px;
+    background-color: var(--color-bg-main);
+}
+
+.toggle-btn {
+    color: var(--color-text-muted);
+    margin-right: 24px;
+}
+
+/* Buscador global como en la imagen */
+.global-search {
+    display: flex;
+    align-items: center;
+    background-color: #FFFFFF;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #E9ECEF;
+    width: 300px;
+}
+
+.global-search mat-icon {
+    color: #ADB5BD;
+    font-size: 20px;
+    margin-right: 8px;
+}
+
+.global-search input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+    font-family: var(--font-family);
+}
+
+.page-wrapper {
+    padding: 0 16px;
+    flex: 1;
+}
+
+/* --- TOAST NOTIFICATIONS (Nivel Dios) --- */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 9999;
+    /* Siempre hasta arriba */
+    pointer-events: none;
+    /* Para no bloquear clics atrás del contenedor */
+}
+
+.toast-item {
+    pointer-events: auto;
+    /* El toast en sí es cliqueable */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    background-color: var(--color-white);
+    color: var(--color-text-dark);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    font-family: var(--font-family);
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    animation: slideInUp 0.3s ease forwards;
+    border-left: 6px solid transparent;
+}
+
+/* Tipos de Toast */
+.toast-item.success {
+    border-left-color: #2E7D32;
+}
+
+.toast-item.success mat-icon {
+    color: #2E7D32;
+}
+
+.toast-item.error {
+    border-left-color: #C62828;
+}
+
+.toast-item.error mat-icon {
+    color: #C62828;
+}
+
+.toast-item.warning {
+    border-left-color: #E66E00;
+}
+
+.toast-item.warning mat-icon {
+    color: #E66E00;
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

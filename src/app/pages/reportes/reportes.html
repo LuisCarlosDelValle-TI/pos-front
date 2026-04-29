@@ -1,0 +1,103 @@
+<div class="page-container">
+
+    <header class="page-header">
+        <div class="header-title-area">
+            <h1 class="section-title">Reportes Financieros</h1>
+            <p class="section-subtitle">Analiza el rendimiento y las ganancias de tu negocio</p>
+        </div>
+        <button class="btn-primary" (click)="exportarReporte()">
+            <mat-icon>download</mat-icon> Exportar Excel
+        </button>
+    </header>
+
+    <div class="period-selector">
+        <button class="period-btn" [class.active]="periodoActivo() === 'Hoy'"
+            (click)="cambiarPeriodo('Hoy')">Hoy</button>
+        <button class="period-btn" [class.active]="periodoActivo() === 'Semana'" (click)="cambiarPeriodo('Semana')">Esta
+            Semana</button>
+        <button class="period-btn" [class.active]="periodoActivo() === 'Mes'" (click)="cambiarPeriodo('Mes')">Este
+            Mes</button>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-blue-light text-blue"><mat-icon>account_balance</mat-icon></div>
+            <div class="stat-info">
+                <span class="stat-label">Ingresos Brutos (Flujo)</span>
+                <span class="stat-value">{{ ingresosTotales() | currency }}</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon bg-red-light text-red"><mat-icon>shopping_cart</mat-icon></div>
+            <div class="stat-info">
+                <span class="stat-label">Costos / Inversión</span>
+                <span class="stat-value text-red">{{ costosTotales() | currency }}</span>
+            </div>
+        </div>
+
+        <div class="stat-card highlight-card">
+            <div class="stat-icon bg-green-light text-green"><mat-icon>trending_up</mat-icon></div>
+            <div class="stat-info">
+                <span class="stat-label">Ganancia Neta (Utilidad)</span>
+                <span class="stat-value text-green">{{ gananciaNetaTotal() | currency }}</span>
+                <span class="margen-badge">Margen: {{ margenGanancia() | number:'1.1-1' }}%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="reports-content">
+
+        <section class="card-box top-products">
+            <h2 class="box-title">Artículos Más Vendidos</h2>
+
+            <div class="top-list">
+                @for (prod of topProductos(); track prod.nombre) {
+                <div class="top-item">
+                    <div class="item-header">
+                        <span class="item-name">{{ prod.nombre }}</span>
+                        <span class="item-amount">{{ prod.ingresoGenerado | currency }}</span>
+                    </div>
+                    <div class="item-subheader">
+                        <span class="item-qty">{{ prod.cantidadVendida }} uds. vendidas</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" [style.width.%]="prod.porcentaje"
+                            [style.background-color]="prod.color">
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+        </section>
+
+        <section class="card-box category-breakdown">
+            <h2 class="box-title">Desglose por Categoría</h2>
+
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th class="text-right">Ingreso</th>
+                            <th class="text-right">Costo</th>
+                            <th class="text-right">Utilidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of desglose(); track item.categoria) {
+                        <tr>
+                            <td class="font-bold">{{ item.categoria }}</td>
+                            <td class="text-right">{{ item.ingresos | currency }}</td>
+                            <td class="text-right text-red">{{ item.costos | currency }}</td>
+                            <td class="text-right text-green font-bold">{{ item.gananciaNeta | currency }}</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+</div>

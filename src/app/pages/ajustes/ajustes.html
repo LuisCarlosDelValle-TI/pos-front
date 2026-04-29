@@ -1,0 +1,155 @@
+<div class="page-container">
+
+    <header class="page-header">
+        <div class="header-title-area">
+            <h1 class="section-title">Ajustes del Sistema</h1>
+            <p class="section-subtitle">Configura las preferencias de tu negocio y la aplicación</p>
+        </div>
+        <button class="btn-primary" (click)="guardarCambios()">
+            <mat-icon>save</mat-icon> Guardar Cambios
+        </button>
+    </header>
+
+    <div class="settings-layout">
+
+        <aside class="settings-sidebar card-box">
+            <nav class="settings-nav">
+                @for (tab of pestanas; track tab.id) {
+                <button class="tab-btn" [class.active]="pestanaActiva() === tab.id" (click)="cambiarPestana(tab.id)">
+                    <mat-icon>{{ tab.icono }}</mat-icon>
+                    {{ tab.nombre }}
+                </button>
+                }
+            </nav>
+        </aside>
+
+        <main class="settings-content card-box">
+
+            @if (pestanaActiva() === 'general') {
+            <div class="settings-panel">
+                <h2 class="panel-title">Información del Negocio</h2>
+                <p class="panel-desc">Estos datos aparecerán en tus reportes y en la pantalla principal.</p>
+
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>Nombre del Negocio</label>
+                        <input type="text" [(ngModel)]="config.negocio.nombre" class="custom-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Propietario / Representante</label>
+                        <input type="text" [(ngModel)]="config.negocio.propietario" class="custom-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Teléfono de Contacto</label>
+                        <input type="text" [(ngModel)]="config.negocio.telefono" class="custom-input">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Dirección</label>
+                        <input type="text" [(ngModel)]="config.negocio.direccion" class="custom-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label>RFC (Opcional para facturas)</label>
+                        <input type="text" [(ngModel)]="config.negocio.rfc" class="custom-input">
+                    </div>
+                </div>
+            </div>
+            }
+
+            @if (pestanaActiva() === 'ticket') {
+            <div class="settings-panel">
+                <h2 class="panel-title">Diseño del Ticket de Venta</h2>
+                <p class="panel-desc">Personaliza lo que tus clientes ven impreso.</p>
+
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>Mensaje al pie del ticket</label>
+                        <textarea [(ngModel)]="config.ticket.mensajeAgradecimiento" class="custom-input textarea"
+                            rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Impresora por defecto (Térmica)</label>
+                        <select [(ngModel)]="config.ticket.impresoraPorDefecto" class="custom-input">
+                            <option value="EPSON TM-T20III">EPSON TM-T20III (USB)</option>
+                            <option value="Xprinter XP-58">Xprinter XP-58 (Bluetooth)</option>
+                            <option value="Generica 80mm">Impresora Genérica (Red)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width toggle-group">
+                        <div class="toggle-info">
+                            <span class="toggle-label">Imprimir Logotipo</span>
+                            <span class="toggle-desc">Muestra el logo del negocio en la parte superior del
+                                ticket.</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" [(ngModel)]="config.ticket.mostrarLogo">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group full-width toggle-group">
+                        <div class="toggle-info">
+                            <span class="toggle-label">Mostrar Teléfono de Contacto</span>
+                            <span class="toggle-desc">Añade el número bajo la dirección para que te localicen.</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" [(ngModel)]="config.ticket.mostrarTelefono">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            }
+
+            @if (pestanaActiva() === 'usuarios') {
+            <div class="settings-panel empty-state-panel">
+                <mat-icon class="huge-icon text-muted">manage_accounts</mat-icon>
+                <h3>Gestión de Usuarios</h3>
+                <p class="text-muted">Módulo en construcción. Aquí podrás crear cuentas para tus empleados (Cajeros) y
+                    restringir su acceso a reportes y ajustes.</p>
+                <button class="btn-outline mt-3">Agregar Usuario</button>
+            </div>
+            }
+
+            @if (pestanaActiva() === 'sistema') {
+            <div class="settings-panel">
+                <h2 class="panel-title">Preferencias del Sistema</h2>
+
+                <div class="form-grid">
+
+                    <div class="form-group full-width toggle-group">
+                        <div class="toggle-info">
+                            <span class="toggle-label">Modo Oscuro (Dark Theme)</span>
+                            <span class="toggle-desc">Cambia la apariencia del sistema para ambientes con poca
+                                luz.</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" [(ngModel)]="config.sistema.temaOscuro" (change)="toggleTema()">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group full-width toggle-group">
+                        <div class="toggle-info">
+                            <span class="toggle-label">Notificaciones de Stock Bajo</span>
+                            <span class="toggle-desc">Te avisa en el Dashboard cuando un producto está por
+                                agotarse.</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" [(ngModel)]="config.sistema.notificacionesStock">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                </div>
+            </div>
+            }
+
+        </main>
+    </div>
+</div>

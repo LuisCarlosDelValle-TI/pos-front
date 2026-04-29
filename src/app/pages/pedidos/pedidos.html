@@ -1,0 +1,393 @@
+<div class="page-container">
+
+    <header class="page-header">
+        <div class="header-title-area">
+            <h1 class="section-title">Pedidos por Encargo</h1>
+            <p class="section-subtitle">Gestiona compras en línea de tus clientes y entregas locales</p>
+        </div>
+        <button class="btn-primary" (click)="abrirModalNuevo()">
+            <mat-icon>add_shopping_cart</mat-icon> Registrar Pedido
+        </button>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-blue-light text-blue"><mat-icon>local_shipping</mat-icon></div>
+            <div class="stat-info">
+                <span class="stat-label">Pedidos Activos</span>
+                <span class="stat-value">{{ pedidosActivos() }}</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-orange-light text-orange"><mat-icon>inventory_2</mat-icon></div>
+            <div class="stat-info">
+                <span class="stat-label">Paquetes en Local (Por entregar)</span>
+                <span class="stat-value text-orange">{{ paquetesEnLocal() }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="toolbar card-box">
+        <div class="search-wrapper">
+            <mat-icon class="search-icon">search</mat-icon>
+            <input type="text" placeholder="Buscar por cliente o producto..." [(ngModel)]="terminoBusqueda"
+                class="search-input">
+        </div>
+
+        <div class="filter-wrapper">
+            <mat-icon class="filter-icon">filter_list</mat-icon>
+            <select [(ngModel)]="filtroEstado" class="filter-select">
+                <option value="Todos">Todos los Estados</option>
+                <option value="Pendiente de Compra">Pendiente de Compra</option>
+                <option value="En Tránsito">En Tránsito</option>
+                <option value="Recibido en Local">Recibido en Local</option>
+                <option value="Entregado al Cliente">Entregado al Cliente</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="orders-grid">
+        @for (pedido of pedidosFiltrados(); track pedido.id) {
+        <div class="order-card card-box">
+
+            <div class="order-header">
+                <div class="order-id"><mat-icon>receipt</mat-icon> {{ pedido.id }}</div>
+                <div class="status-badge" [ngClass]="{
+    'status-pending': pedido.estado === 'Pendiente de Compra',
+    'status-transit': pedido.estado === 'En Tránsito',
+    'status-ready': pedido.estado === 'Recibido en Local',
+    'status-done': pedido.estado === 'Entregado al Cliente',
+    'status-canceled': pedido.estado === 'Cancelado'
+}">
+                    {{ pedido.estado }}
+                </div>
+            </div>
+
+            <div class="order-body">
+                <div class="customer-info">
+                    <span class="client-name">{{ pedido.cliente }}</span>
+                    <span class="client-phone"><mat-icon>phone</mat-icon> {{ pedido.telefono }}</span>
+                </div>
+
+                <div class="product-info">
+                    <span class="platform-badge" [ngClass]="pedido.plataforma.toLowerCase().replace(' ', '')">
+                        {{ pedido.plataforma }}
+                    </span>
+                    <p class="product-desc">{{ pedido.productoDescripcion }}</p>
+                    @if (pedido.guiaRastreo) {
+                    <span class="tracking-guide">Guía: {{ pedido.guiaRastreo }}</span>
+                    }
+                </div>
+            </div>
+
+            <div class="order-finance">
+                <div class="finance-row">
+                    <span>Costo Total (App + Tu Comisión):</span>
+                    <span class="font-bold">{{ calcularTotalCobrarCliente(pedido) | currency }}</span>
+                </div>
+                <div class="finance-row">
+                    <span>Anticipo Pagado:</span>
+                    <span class="text-green">-{{ pedido.anticipoDado | currency }}</span>
+                </div>
+                <div class="finance-row highlight">
+                    <span>Saldo a Pagar a la Entrega:</span>
+                    <span class="text-red font-bold">{{ calcularSaldoPendiente(pedido) | currency }}</span>
+                </div>
+            </div>
+
+<div class="order-actions" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px;">
+                <button class="action-btn outline-btn" (click)="cambiarEstado(pedido)" style="flex: 1; min-width: 100px;">
+                    <mat-icon>sync_alt</mat-icon> Actualizar
+                </button>
+                <button class="action-btn primary-btn" (click)="imprimirTicket(pedido)" style="flex: 1; min-width: 100px;">
+                    <mat-icon>print</mat-icon> Imprimir
+                </button>
+                <button class="action-btn" style="color: #ef4444; border: 1px solid #ef4444; background: transparent; flex: 1; min-width: 100px;" (click)="cancelarPedido(pedido)">
+                    <mat-icon>cancel</mat-icon> Cancelar
+                </button>
+
+                @if (pedido.telefono) {
+                <div style="width: 100%; display: flex; gap: 8px; margin-top: 4px;">
+                    
+                    <button class="action-btn" style="flex: 1; color: #0284c7; border: 1px solid #0284c7; background: #f0f9ff;" (click)="compartirTicketMagico(pedido)">
+                        <mat-icon>image</mat-icon> Enviar Ticket
+                    </button>
+
+                    <button class="action-btn" style="flex: 1; color: #16a34a; border: 1px solid #16a34a; background: #f0fdf4;" (click)="notificarEstadoWhatsApp(pedido)">
+                        <mat-icon>chat</mat-icon> Avisar Estado
+                    </button>
+                    
+                </div>
+                }
+            </div>
+
+        </div>
+        } @empty {
+        <div class="empty-state card-box">
+            <mat-icon>local_shipping</mat-icon>
+            <h3>No hay pedidos</h3>
+            <p>No se encontraron pedidos con esos filtros.</p>
+        </div>
+        }
+    </div>
+
+</div>
+
+@if (mostrarModal()) {
+<div class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+            <h2>Registrar Nuevo Pedido</h2>
+            <button class="close-btn" (click)="cerrarModal()"><mat-icon>close</mat-icon></button>
+        </div>
+
+        <div class="modal-body form-grid">
+
+            <div class="form-group">
+                <label>Nombre del Cliente *</label>
+                <input type="text" [(ngModel)]="pedidoNuevo().cliente" class="custom-input"
+                    placeholder="Ej. Juan Pérez">
+            </div>
+
+            <div class="form-group">
+                <label>Teléfono (WhatsApp)</label>
+                <input type="text" [(ngModel)]="pedidoNuevo().telefono" class="custom-input" placeholder="10 dígitos">
+            </div>
+
+            <div class="form-group full-width">
+                <label>Descripción del Producto *</label>
+                <input type="text" [(ngModel)]="pedidoNuevo().productoDescripcion" class="custom-input"
+                    placeholder="Ej. Audífonos Bluetooth negros">
+            </div>
+
+            <div class="form-group">
+                <label>Plataforma de Compra</label>
+                <select [(ngModel)]="pedidoNuevo().plataforma" class="custom-input">
+                    <option value="Mercado Libre">Mercado Libre</option>
+                    <option value="Amazon">Amazon</option>
+                    <option value="AliExpress">AliExpress</option>
+                    <option value="Otro">Otro sitio web</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Estado Actual</label>
+                <select [(ngModel)]="pedidoNuevo().estado" class="custom-input">
+                    <option value="Pendiente de Compra">Pendiente de Compra (Aún no lo pago)</option>
+                    <option value="En Tránsito">En Tránsito (Ya viene en camino)</option>
+                    <option value="Recibido en Local">Recibido (Listo para entregar)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Costo del Producto (App) *</label>
+                <div class="input-with-icon">
+                    <span>$</span>
+                    <input type="number" [(ngModel)]="pedidoNuevo().costoProducto" class="custom-input pl-30"
+                        placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Costo de Envío (App)</label>
+                <div class="input-with-icon">
+                    <span>$</span>
+                    <input type="number" [(ngModel)]="pedidoNuevo().costoEnvioApp" class="custom-input pl-30"
+                        placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Tu Comisión</label>
+                <div class="commission-group">
+                    <select [(ngModel)]="pedidoNuevo().tipoComision" class="custom-input sm-select">
+                        <option value="Fija">$ Fijo</option>
+                        <option value="Porcentaje">%</option>
+                    </select>
+                    <input type="number" [(ngModel)]="pedidoNuevo().valorComision" class="custom-input flex-1">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Anticipo Recibido</label>
+                <div class="input-with-icon text-green">
+                    <span>$</span>
+                    <input type="number" [(ngModel)]="pedidoNuevo().anticipoDado" class="custom-input pl-30"
+                        placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="dynamic-summary full-width">
+                <div class="summary-row">
+                    <span>Costo + Envío App:</span>
+                    <span>{{ ((pedidoNuevo().costoProducto || 0) + (pedidoNuevo().costoEnvioApp || 0)) | currency
+                        }}</span>
+                </div>
+                <div class="summary-row text-orange">
+                    <span>Tu Ganancia (Comisión):</span>
+                    <span class="font-bold">+ {{ calcularComisionVistaPrevia() | currency }}</span>
+                </div>
+                <div class="summary-row final-total">
+                    <span>TOTAL A COBRAR AL CLIENTE:</span>
+                    <span>{{ calcularTotalVistaPrevia() | currency }}</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-outline" (click)="cerrarModal()">Cancelar</button>
+            <button class="btn-primary" (click)="guardarPedidoNuevo()">
+                <mat-icon>save</mat-icon> Guardar Pedido
+            </button>
+        </div>
+
+    </div>
+</div>
+}
+
+@if (pedidoAImprimir()) {
+<div class="ticket-impresion">
+    <h1>Mi Papelería y Ciber</h1>
+    <p class="text-center">La Tejona, Cotaxtla, Ver,.</p>
+    <p class="text-center">Tel: 2717157226</p>
+    <div class="ticket-line"></div>
+
+    <p class="text-center font-bold">COMPROBANTE DE ENCARGO</p>
+    <p>Fecha: {{ fechaImpresion | date:'short' }}</p>
+    <p>Folio: {{ pedidoAImprimir()?.id }}</p>
+    <p>Cliente: {{ pedidoAImprimir()?.cliente }}</p>
+    <p>Tel: {{ pedidoAImprimir()?.telefono || 'N/A' }}</p>
+
+    <div class="ticket-line"></div>
+    <p class="font-bold">Detalle del Producto:</p>
+    <p>{{ pedidoAImprimir()?.productoDescripcion }}</p>
+    <p>Plataforma: {{ pedidoAImprimir()?.plataforma }}</p>
+    @if (pedidoAImprimir()?.guiaRastreo) {
+    <p>Rastreo: {{ pedidoAImprimir()?.guiaRastreo }}</p>
+    }
+
+    <div class="ticket-line"></div>
+    <p>Costo Producto: <span style="float: right;">{{ pedidoAImprimir()?.costoProducto | currency }}</span></p>
+    <p>Costo Envío: <span style="float: right;">{{ pedidoAImprimir()?.costoEnvioApp | currency }}</span></p>
+    <p>Nuestra Comisión: <span style="float: right;">{{ calcularComisionTotal(pedidoAImprimir()!) | currency }}</span>
+    </p>
+
+    <div class="ticket-line"></div>
+    <p class="text-right font-bold" style="font-size: 14px;">TOTAL: {{ calcularTotalCobrarCliente(pedidoAImprimir()!) |
+        currency }}</p>
+    <p class="text-right">Anticipo Dejado: {{ pedidoAImprimir()?.anticipoDado | currency }}</p>
+    <p class="text-right font-bold text-red" style="font-size: 15px;">SALDO PENDIENTE: {{
+        calcularSaldoPendiente(pedidoAImprimir()!) | currency }}</p>
+
+    <div class="ticket-line"></div>
+    <p class="text-center font-bold">¡Conserve este ticket para<br>recoger su encargo!</p>
+    <p class="text-center">*** Gracias por su confianza ***</p>
+</div>
+}
+
+@if (mostrarModalActualizar()) {
+<div class="modal-overlay" (click)="cerrarModalActualizar()">
+    <div class="modal-box mini-modal" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+            <h2>Actualizar Pedido {{ pedidoAActualizar()?.id }}</h2>
+            <button class="close-btn" (click)="cerrarModalActualizar()"><mat-icon>close</mat-icon></button>
+        </div>
+
+        <div class="modal-body form-grid" style="display: flex; flex-direction: column; gap: 20px;">
+
+            <p class="text-muted" style="margin: 0; font-size: 13px;">
+                Cliente: <strong class="text-dark">{{ pedidoAActualizar()?.cliente }}</strong><br>
+                Producto: {{ pedidoAActualizar()?.productoDescripcion }}
+            </p>
+
+            <div class="form-group">
+                <label>Nuevo Estado</label>
+                <select [(ngModel)]="nuevoEstado" class="custom-input">
+                    <option value="Pendiente de Compra">Pendiente de Compra</option>
+                    <option value="En Tránsito">En Tránsito (Ya viene en camino)</option>
+                    <option value="Recibido en Local">Recibido (Listo para entregar)</option>
+                    <option value="Entregado al Cliente">Entregado al Cliente (Finalizado)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Guía de Rastreo (Opcional)</label>
+                <input type="text" [(ngModel)]="nuevaGuia" class="custom-input" placeholder="Ej. ML-123456789">
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-outline" (click)="cerrarModalActualizar()">Cancelar</button>
+            <button class="btn-primary" (click)="guardarActualizacionEstado()">
+                <mat-icon>check_circle</mat-icon> Guardar Cambios
+            </button>
+        </div>
+
+    </div>
+</div>
+}
+
+@if (pedidoAImprimir()) {
+<div id="comprobante-digital" style="position: fixed; left: -9999px; width: 400px; background: #f3f4f6; padding: 20px; font-family: 'Arial', sans-serif;">
+    <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: #111827; font-size: 22px;">Comprobante de Encargo</h2>
+            <p style="margin: 5px 0 0; color: #4f46e5; font-weight: bold; font-size: 16px;">Luis Carlos Creative Clicks</p>
+        </div>
+
+        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 0 0 5px; color: #6b7280; font-size: 13px; text-transform: uppercase;">Folio del Pedido</p>
+            <p style="margin: 0; color: #111827; font-size: 20px; font-weight: bold; letter-spacing: 1px;">{{ pedidoAImprimir()?.id }}</p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <p style="margin: 0 0 8px; font-size: 15px;"><strong>Cliente:</strong> {{ pedidoAImprimir()?.cliente }}</p>
+            <p style="margin: 0 0 8px; font-size: 15px;"><strong>Producto:</strong> {{ pedidoAImprimir()?.productoDescripcion }}</p>
+            <p style="margin: 0; font-size: 15px;"><strong>Vía:</strong> {{ pedidoAImprimir()?.plataforma }}</p>
+        </div>
+
+        <div style="border-top: 2px dashed #d1d5db; padding-top: 15px; margin-bottom: 15px;">
+            <p style="margin: 0 0 10px; font-weight: bold; color: #4b5563; font-size: 13px; text-transform: uppercase;">Desglose de Costos</p>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+                <span style="color: #6b7280;">Costo del Producto</span>
+                <span style="color: #111827;">{{ pedidoAImprimir()?.costoProducto | currency }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+                <span style="color: #6b7280;">Costo de Envío (App)</span>
+                <span style="color: #111827;">{{ pedidoAImprimir()?.costoEnvioApp | currency }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+                <span style="color: #6b7280;">Comisión por Servicio</span>
+                <span style="color: #111827;">{{ calcularComisionTotal(pedidoAImprimir()!) | currency }}</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid #e5e7eb; margin-top: 8px; font-size: 15px;">
+                <span style="color: #374151; font-weight: bold;">Costo Total</span>
+                <strong style="color: #111827;">{{ calcularTotalCobrarCliente(pedidoAImprimir()!) | currency }}</strong>
+            </div>
+        </div>
+
+        <div style="border-top: 2px dashed #d1d5db; padding-top: 15px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px;">
+                <span style="color: #4b5563;">Anticipo Pagado</span>
+                <strong style="color: #059669;">- {{ pedidoAImprimir()?.anticipoDado | currency }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #e5e7eb; font-size: 18px;">
+                <span style="color: #111827; font-weight: bold;">SALDO PENDIENTE</span>
+                <strong style="color: #ef4444; font-weight: bold;">{{ calcularSaldoPendiente(pedidoAImprimir()!) | currency }}</strong>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #9ca3af;">
+            <p style="margin: 0 0 3px;">¡Gracias por su preferencia!</p>
+            <p style="margin: 0;">Le avisaremos por WhatsApp cuando esté listo.</p>
+        </div>
+    </div>
+</div>
+}
