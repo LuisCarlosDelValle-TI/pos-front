@@ -97,6 +97,19 @@ export class PedidosComponent implements OnInit {
   pedidosActivos = computed(() => this.pedidos().filter(p => p.estado !== 'Entregado al Cliente' && p.estado !== 'Cancelado').length);
   paquetesEnLocal = computed(() => this.pedidos().filter(p => p.estado === 'Recibido en Local').length);
 
+  // --- NUEVAS ESTADÍSTICAS GLOBALES ---
+  // 1. Filtramos los cancelados para que las cuentas de dinero sean exactas
+  pedidosValidos = computed(() => this.pedidos().filter(p => p.estado !== 'Cancelado'));
+
+  // 2. Total histórico de pedidos (incluye entregados)
+  totalPedidosHistorico = computed(() => this.pedidos().length);
+
+  // 3. Suma de toda tu Inversión (Costo + Envío)
+  totalInversion = computed(() => this.pedidosValidos().reduce((acc, p) => acc + (p.costoProducto + (p.costoEnvioApp || 0)), 0));
+
+  // 4. Suma de toda tu Ganancia (Comisiones)
+  totalGanancia = computed(() => this.pedidosValidos().reduce((acc, p) => acc + this.calcularComisionTotal(p), 0));
+
   // --- LÓGICA FINANCIERA ---
   calcularComisionTotal(pedido: PedidoEncargo): number {
     if (pedido.tipoComision === 'Fija') {
@@ -231,7 +244,6 @@ export class PedidosComponent implements OnInit {
     });
   }
 
-  // Función de Cancelar / Eliminar
   // Función de Cancelar (Borrado Lógico)
   cancelarPedido(pedido: PedidoEncargo) {
     const confirmar = confirm(`¿Estás seguro de que quieres cancelar el pedido de ${pedido.cliente}?`);
@@ -257,6 +269,7 @@ export class PedidosComponent implements OnInit {
       });
     }
   }
+
   // Variables para el Ticket
   pedidoAImprimir = signal<PedidoEncargo | null>(null);
   fechaImpresion = new Date();
